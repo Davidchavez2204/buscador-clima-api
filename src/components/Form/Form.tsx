@@ -1,0 +1,82 @@
+import type { ChangeEvent } from "react";
+import { useState } from "react";
+import { countries } from "../../data/countries";
+import type { SearchType } from "../../types";
+import styles from './Form.module.css'
+import Alert from "../Alert/Alert";
+
+type FormProps = {
+    fetchWeather: (search: SearchType) => Promise<void>
+}
+export default function Form({fetchWeather}:FormProps) {
+
+    const [search, setSearch] = useState<SearchType>({
+        city: '',
+        country: ''
+    })
+
+    const [alert, setAlert] = useState('')
+
+    //Escribe en el formulario y sincroniza en el State
+    const handleChange = (e: ChangeEvent<HTMLInputElement, HTMLInputElement> |ChangeEvent<HTMLSelectElement, HTMLInputElement> ) => {
+        setSearch({
+            ...search,
+            [e.target.name] : e.target.value
+        })
+    }
+
+    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault()
+
+        if(Object.values(search).includes('')){
+            setAlert('Todos los campos son obligatorios')
+            return
+        }
+
+        fetchWeather(search)
+    }
+
+  return (
+    <form 
+        className={styles.form}
+        onSubmit={handleSubmit}
+    >
+        {alert && <Alert>{alert}</Alert>}
+        <div className={styles.field}>
+            <label htmlFor="city">Ciudad:</label>
+            <input 
+                id="city" 
+                type="text" 
+                name="city"
+                placeholder="Ciudad"
+                value={search.city}
+                onChange={handleChange}
+            />
+        </div>
+
+        <div>
+            <label 
+            htmlFor="country"
+            className={styles.field}>País:</label>
+            <select
+                id="country"
+                name="country"
+                value={search.country}
+                onChange={handleChange}
+            >
+                <option className={styles.option}>--Seleccione un País--</option>
+            {countries.map(country => (
+                <option
+                className={styles.option}
+                    key={country.code}
+                    value={country.code}
+                >{country.name}
+                </option>
+            ))}
+            </select>
+        </div>
+
+        <input type="submit"className={styles.submit} value="Consultar Clima"/>
+    </form>
+  )
+}
